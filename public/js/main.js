@@ -33,7 +33,7 @@ let handleSendTransaction = async (amount, address) => {
         window.alert('Investment amount cannot be less than 0.05 ethers');
     }
     else {
-        let referrerExists;
+        let referrerExists = true;
         await fetch('/isReferrer/' + address).then(async (response) => {
             response.json().then((data) => {
                 referrerExists = data.isReferrer;
