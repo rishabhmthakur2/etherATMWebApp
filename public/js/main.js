@@ -21,6 +21,7 @@ let handleSendTransaction = async (amount, address) => {
     } else if (window.web3) {
         web3 = new Web3(window.web3.currentProvider);
     }
+
     console.log(amount, address);
     if (!amount) {
         window.alert('Please enter ethers to invest');
@@ -33,36 +34,35 @@ let handleSendTransaction = async (amount, address) => {
     }
     else {
         let referrerExists;
-        await fetch('/isReferrer/' + address).then((response)=>{
-            response.json().then((data)=>{
+        await fetch('/isReferrer/' + address).then(async (response) => {
+            response.json().then((data) => {
                 referrerExists = data.isReferrer;
                 console.log(data);
             });
+            const addresses = await web3.eth.getAccounts();
+            const senderAddress = addresses[0];
+            const etherATM = new web3.eth.Contract([{ "constant": false, "inputs": [{ "name": "_owner", "type": "address" }], "name": "setOwner", "outputs": [], "payable": false, "stateMutability": "nonpayable", "type": "function" }, { "constant": true, "inputs": [], "name": "collectedFees", "outputs": [{ "name": "", "type": "uint256" }], "payable": false, "stateMutability": "view", "type": "function" }, { "constant": true, "inputs": [{ "name": "", "type": "uint256" }], "name": "persons", "outputs": [{ "name": "etherAddress", "type": "address" }, { "name": "amount", "type": "uint256" }, { "name": "referrer", "type": "address" }], "payable": false, "stateMutability": "view", "type": "function" }, { "constant": true, "inputs": [], "name": "payoutIdx", "outputs": [{ "name": "", "type": "uint256" }], "payable": false, "stateMutability": "view", "type": "function" }, { "constant": true, "inputs": [], "name": "balance", "outputs": [{ "name": "", "type": "uint256" }], "payable": false, "stateMutability": "view", "type": "function" }, { "constant": false, "inputs": [{ "name": "referrer", "type": "address" }], "name": "enter", "outputs": [], "payable": true, "stateMutability": "payable", "type": "function" }, { "inputs": [], "payable": false, "stateMutability": "nonpayable", "type": "constructor" }], '0xeb724ac5d7488a29d6cf76262a1db561f068b2df');
+            if (referrerExists) {
+                etherATM.methods.enter(address).send({
+                    from: senderAddress,
+                    value: amount * 1000000000000000000
+                }).on('transactionHash', function (hash) {
+                    document.getElementById("btn-send").value = "View Transaction";
+                    document.getElementById("btn-send").onclick = function () {
+                        window.open('https://ropsten.etherscan.io/tx/' + hash);
+                        window.location.reload();
+                    };
+                }).on('error', function (error) {
+                    window.alert(JSON.stringify(error.stack));
+                });
+                fetch('/addInvester/' + senderAddress, {
+                    method: 'POST',
+                });
+            }
+            else {
+                window.alert('Referrer not registered in the system');
+            }
         });
-        console.log(referrerExists);
-        const addresses = await web3.eth.getAccounts();
-        const senderAddress = addresses[0];
-        const etherATM = new web3.eth.Contract([{ "constant": false, "inputs": [{ "name": "_owner", "type": "address" }], "name": "setOwner", "outputs": [], "payable": false, "stateMutability": "nonpayable", "type": "function" }, { "constant": true, "inputs": [], "name": "collectedFees", "outputs": [{ "name": "", "type": "uint256" }], "payable": false, "stateMutability": "view", "type": "function" }, { "constant": true, "inputs": [{ "name": "", "type": "uint256" }], "name": "persons", "outputs": [{ "name": "etherAddress", "type": "address" }, { "name": "amount", "type": "uint256" }, { "name": "referrer", "type": "address" }], "payable": false, "stateMutability": "view", "type": "function" }, { "constant": true, "inputs": [], "name": "payoutIdx", "outputs": [{ "name": "", "type": "uint256" }], "payable": false, "stateMutability": "view", "type": "function" }, { "constant": true, "inputs": [], "name": "balance", "outputs": [{ "name": "", "type": "uint256" }], "payable": false, "stateMutability": "view", "type": "function" }, { "constant": false, "inputs": [{ "name": "referrer", "type": "address" }], "name": "enter", "outputs": [], "payable": true, "stateMutability": "payable", "type": "function" }, { "inputs": [], "payable": false, "stateMutability": "nonpayable", "type": "constructor" }], '0xeb724ac5d7488a29d6cf76262a1db561f068b2df');
-        if(referrerExists){
-            etherATM.methods.enter(address).send({
-                from: senderAddress,
-                value: amount * 1000000000000000000
-            }).on('transactionHash', function (hash) {
-                document.getElementById("btn-send").value = "View Transaction";
-                document.getElementById("btn-send").onclick = function () {
-                    window.open('https://ropsten.etherscan.io/tx/' + hash);
-                    window.location.reload();
-                };
-            }).on('error', function (error) {
-                window.alert(JSON.stringify(error.stack));
-            });
-            fetch('/addInvester/'+senderAddress, {
-                method: 'POST',
-            });
-        }
-        else{
-            window.alert('Referrer not registered in the system');
-        }
     }
 }
 const defaultAmount = 0.05;
