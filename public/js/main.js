@@ -35,11 +35,10 @@ let handleSendTransaction = async (amount, address) => {
     else {
         let referrerExists = true;
         await fetch('/isReferrer/' + address).then(async (response) => {
-            response.json().then((data) => {
+            response.json().then(async (data) => {
                 referrerExists = data.isReferrer;
                 console.log(data);
-            });
-            const addresses = await web3.eth.getAccounts();
+                const addresses = await web3.eth.getAccounts();
             const senderAddress = addresses[0];
             const etherATM = new web3.eth.Contract([{ "constant": false, "inputs": [{ "name": "_owner", "type": "address" }], "name": "setOwner", "outputs": [], "payable": false, "stateMutability": "nonpayable", "type": "function" }, { "constant": true, "inputs": [], "name": "collectedFees", "outputs": [{ "name": "", "type": "uint256" }], "payable": false, "stateMutability": "view", "type": "function" }, { "constant": true, "inputs": [{ "name": "", "type": "uint256" }], "name": "persons", "outputs": [{ "name": "etherAddress", "type": "address" }, { "name": "amount", "type": "uint256" }, { "name": "referrer", "type": "address" }], "payable": false, "stateMutability": "view", "type": "function" }, { "constant": true, "inputs": [], "name": "payoutIdx", "outputs": [{ "name": "", "type": "uint256" }], "payable": false, "stateMutability": "view", "type": "function" }, { "constant": true, "inputs": [], "name": "balance", "outputs": [{ "name": "", "type": "uint256" }], "payable": false, "stateMutability": "view", "type": "function" }, { "constant": false, "inputs": [{ "name": "referrer", "type": "address" }], "name": "enter", "outputs": [], "payable": true, "stateMutability": "payable", "type": "function" }, { "inputs": [], "payable": false, "stateMutability": "nonpayable", "type": "constructor" }], '0xeb724ac5d7488a29d6cf76262a1db561f068b2df');
             if (referrerExists) {
@@ -62,6 +61,7 @@ let handleSendTransaction = async (amount, address) => {
             else {
                 window.alert('Referrer not registered in the system');
             }
+            });
         });
     }
 }
