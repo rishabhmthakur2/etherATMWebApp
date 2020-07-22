@@ -25,6 +25,13 @@ con.connect(function(err) {
   console.log("Connected!");
 });
 
+con.query(`INSERT INTO transactions (Address, Amount) VALUES ('0xF51a48488be6AbEFFb56d4B1B666C19F2F66Cf1e', '0.05')`);
+
+con.query(`SELECT * FROM customers where Address='0xF51a48488be6AbEFFb56d4B1B666C19F2F66Cf1e'`, function (err, result, fields) {
+    if (err) throw err;
+    console.log(result);
+});
+
 app.use(
     bodyParser.urlencoded({
         extended: true
