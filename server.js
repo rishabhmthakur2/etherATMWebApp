@@ -11,6 +11,20 @@ const publicDirectoryPath = path.join(__dirname, "./public");
 const viewsPath = path.join(__dirname, "./templates/views");
 const partialsPath = path.join(__dirname, "./templates/partials");
 
+var mysql = require('mysql');
+
+var con = mysql.createConnection({
+  host: "localhost",
+  user: "root",
+  password: "Ether@123",
+  database: 'etheratm'
+});
+
+con.connect(function(err) {
+  if (err) throw err;
+  console.log("Connected!");
+});
+
 app.use(
     bodyParser.urlencoded({
         extended: true
