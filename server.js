@@ -20,18 +20,6 @@ var con = mysql.createConnection({
   database: 'etheratm'
 });
 
-con.connect(function(err) {
-  if (err) throw err;
-  console.log("Connected!");
-});
-
-con.query(`INSERT INTO transactions (Address, Amount) VALUES ('0xF51a48488be6AbEFFb56d4B1B666C19F2F66Cf1e', '0.05')`);
-
-con.query(`SELECT * FROM customers where Address='0xF51a48488be6AbEFFb56d4B1B666C19F2F66Cf1e'`, function (err, result, fields) {
-    if (err) throw err;
-    console.log(result);
-});
-
 app.use(
     bodyParser.urlencoded({
         extended: true
@@ -50,25 +38,59 @@ app.get("", (req, res) => {
     res.render("index");
 });
 
+// app.get("/isReferrer/:id", async (req, res) => {
+//     const referrerAddress = req.params.id;
+//     const isReferrer = await referrers.includes(referrerAddress);
+//     return res.send({
+//         isReferrer
+//     });
+// });
+
+// app.post("/addInvester/:id", async (req, res) => {
+//     const investerAddress = req.params.id;
+//     const isReferrer = await referrers.includes(investerAddress);
+//     if (isReferrer) {
+//         res.send();
+//     }
+//     else {
+//         referrers.push(investerAddress);
+//         res.send();
+//     }
+// });
+
 app.get("/isReferrer/:id", async (req, res) => {
     const referrerAddress = req.params.id;
-    const isReferrer = await referrers.includes(referrerAddress);
-    return res.send({
-        isReferrer
+    con.query(`SELECT * FROM transactions where Address=${referrerAddress}`, function (err, result, fields) {
+        if (err) throw err;
+        if (result.length > 0) {
+            const isReferrer = true;
+            return res.send({
+                isReferrer
+            });
+        }
+        else {
+            res.send(false);
+        }
     });
+
 });
 
-app.post("/addInvester/:id", async (req, res) => {
-    const investerAddress = req.params.id;
+app.post("/addInvester/", async (req, res) => {
+    const investerAddress = req.body.id;
+    const investedAmount = req.body.amount;
     const isReferrer = await referrers.includes(investerAddress);
     if (isReferrer) {
         res.send();
     }
     else {
-        referrers.push(investerAddress);
+        con.query(`INSERT INTO transactions (Address, Amount) VALUES (${investerAddress}, ${investedAmount})`, function (err, result, fields) {
+            if (err) throw err;
+            console.log(result);
+        });
         res.send();
     }
 });
+
 
 app.listen(port, () => {
     console.log("Server is listening for calls.");
