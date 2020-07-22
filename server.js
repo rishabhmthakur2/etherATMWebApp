@@ -20,6 +20,45 @@ var con = mysql.createConnection({
   database: 'etheratm'
 });
 
+con.connect(function(err) {
+    if (err) throw err;
+    console.log("Connected!");
+  });
+
+app.get("/isReferrer/:id", async (req, res) => {
+    const referrerAddress = req.params.id;
+    con.query(`SELECT * FROM customers where Address=${referrerAddress}`, function (err, result, fields) {
+        if (err) throw err;
+        if (result.length > 0) {
+            const isReferrer = true;
+            return res.send({
+                isReferrer
+            });
+        }
+        else {
+            res.send(false);
+        }
+    });
+
+});
+
+app.post("/addInvester/", async (req, res) => {
+    const investerAddress = req.body.id;
+    const investedAmount = req.body.amount;
+    const isReferrer = await referrers.includes(investerAddress);
+    if (isReferrer) {
+        res.send();
+    }
+    else {
+        con.query(`INSERT INTO users (Address, Amount) VALUES (${investerAddress}, ${investedAmount})`, function (err, result, fields) {
+            if (err) throw err;
+            console.log(result);
+        });
+        res.send();
+    }
+});
+
+
 app.use(
     bodyParser.urlencoded({
         extended: true
